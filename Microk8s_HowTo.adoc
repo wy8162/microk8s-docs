@@ -1,0 +1,68 @@
+:source-highlighter: pygments
+
+= Microk8s - How Tos
+:sectnums:
+:toc:
+:toclevels: 4
+:toc-title: Table of Contents
+
+:description: Example AsciiDoc document
+:keywords: AsciiDoc
+:imagesdir: ./img
+
+== Install and Configurations
+=== Get Started
+```shell
+# Install a Microk8s cluster with CPU 4 and memory 4GB
+microk8s install --cpu=4 --mem=4
+
+# Enable addons
+microk8s enable dashboard dns registry istio
+
+# Enable host access so that services can be accessed from fixed IP address.
+
+microk8s enable host-access
+```
+
+*Find the Cluster IP*
+```shell
+kubectl cluster-info
+
+Kubernetes control plane is running at https://192.168.64.3:16443
+CoreDNS is running at https://192.168.64.3:16443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+```
+
+*Find the Port Number for Dashboard*
+```shell
+kubectl -n kube-system get services
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                  AGE
+kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP   2d11h
+metrics-server              ClusterIP   10.152.183.124   <none>        443/TCP                  2d11h
+dashboard-metrics-scraper   ClusterIP   10.152.183.118   <none>        8000/TCP                 2d11h
+kubernetes-dashboard        NodePort    10.152.183.200   <none>        443:32723/TCP   <1>         2d11h
+```
+<1> Port 32723 is the port number of the dashboard.
+
+Dashboard: https://192.168.64.3:32723
+
+*Get Token*
+```shell
+microk8s config
+```
+The token of the above command can be used to login to dashboard.
+
+Or, get the token the following way:
+```shell
+token=$(kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
+kubectl -n kube-system describe secret $token
+```
+
+*Work with Kubectl*
+```shell
+cd $HOME
+mkdir .kube
+cd .kube
+microk8s config > config
+```
